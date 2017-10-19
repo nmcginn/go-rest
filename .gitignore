@@ -1,2 +1,5 @@
 www
 go-rest
+.idea/
+glide.lock
+vendor/

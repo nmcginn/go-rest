@@ -39,8 +39,13 @@ func main() {
 			},
 			cli.StringFlag{
 				Name:  "database",
-				Value: "public",
+				Value: "postgres",
 				Usage: "database to connect with",
+			},
+			cli.StringFlag{
+				Name:  "schema",
+				Value: "public",
+				Usage: "schema to query against",
 			},
 		},
 	}}
@@ -53,6 +58,15 @@ func main() {
 }
 
 func run_server(ctx *cli.Context) error {
-	fmt.Printf("HOST %v", ctx.String("host"))
-	return nil
+	database := postgres_db{
+		Host:     ctx.String("host"),
+		Port:     ctx.String("port"),
+		Username: ctx.String("user"),
+		Password: ctx.String("password"),
+		Database: ctx.String("database"),
+		Schema:   ctx.String("schema"),
+	}
+	results, err := describe_tables(database)
+	fmt.Printf("%v\n", results)
+	return err
 }
