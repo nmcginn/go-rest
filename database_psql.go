@@ -11,7 +11,7 @@ const AVAILABLE_TABLES = `select column_name, data_type, character_maximum_lengt
 	from INFORMATION_SCHEMA.COLUMNS;`
 
 func describe_tables(d postgres_db) (results []map[string]interface{}, err error) {
-	conn_str := "user=" + d.Username + " password=" + d.Password + " dbname=" + d.Database + " host=" + d.Host + " port=" + d.Port
+	conn_str := "user=" + d.Username + " password=" + d.Password + " dbname=" + d.Database + " host=" + d.Host + " port=" + d.Port + " sslmode=disable"
 	db, err := sql.Open("postgres", conn_str)
 	defer db.Close()
 	if err != nil {

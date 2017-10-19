@@ -2,7 +2,8 @@
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 	-- test schema
 	CREATE DATABASE docker;
-	CREATE TABLE users (
+	\c docker;
+	CREATE TABLE public.users (
 		user_id       SERIAL,
 		user_name     VARCHAR(40),
 		date_of_birth DATE,
@@ -16,4 +17,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 	-- privs
 	CREATE USER docker PASSWORD 'docker';
 	GRANT ALL PRIVILEGES ON DATABASE docker TO docker;
+	GRANT USAGE ON SCHEMA public to docker;
+	GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO docker;
 EOSQL
