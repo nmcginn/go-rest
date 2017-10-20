@@ -3,3 +3,5 @@ go-rest
 .idea/
 glide.lock
 vendor/
+# may decide on a different approach, keeping the repo clear for now
+bindata.go

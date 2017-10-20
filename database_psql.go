@@ -2,13 +2,10 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"fmt"
+	_ "github.com/lib/pq"
 	"os"
 )
-
-const AVAILABLE_TABLES = `select column_name, data_type, character_maximum_length
-	from INFORMATION_SCHEMA.COLUMNS;`
 
 func describe_tables(d postgres_db) (results []map[string]interface{}, err error) {
 	conn_str := "user=" + d.Username + " password=" + d.Password + " dbname=" + d.Database + " host=" + d.Host + " port=" + d.Port + " sslmode=disable"
@@ -19,7 +16,13 @@ func describe_tables(d postgres_db) (results []map[string]interface{}, err error
 		return results, err
 	}
 
-	rows, err := db.Query(AVAILABLE_TABLES)
+	raw_query, err := Asset("data/describe.sql")
+	if err != nil {
+		return results, err
+	}
+	available_tables := string(raw_query[:])
+
+	rows, err := db.Query(available_tables)
 	defer rows.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
