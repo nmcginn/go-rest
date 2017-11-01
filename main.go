@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"os"
@@ -44,7 +45,8 @@ func available_tables(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		js, _ := json.Marshal(results)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, "%v", results)
+		fmt.Fprintf(w, "%s", js)
 	}
 }
