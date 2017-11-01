@@ -1,72 +1,53 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/gorilla/mux"
+	"net/http"
 	"os"
 )
 
-func main() {
-	app := cli.NewApp()
-	app.Name = "Go REST"
-	app.Usage = "A stateless REST API for your relational database"
+var host = flag.String("host", "127.0.0.1", "the postgres host to connect to")
+var port = flag.String("port", "5432", "the postgres port to connect to")
+var username = flag.String("username", "postgres", "the username to connect with")
+var password = flag.String("password", "postgres", "the password to connect with")
+var database = flag.String("database", "postgres", "the database to connect with")
+var schema = flag.String("schema", "public", "the schema to serve")
 
-	app.Commands = []cli.Command{{
-		Name:    "run",
-		Aliases: []string{"start"},
-		Usage:   "start the server",
-		Action:  run_server,
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "host",
-				Value: "127.0.0.1",
-				Usage: "hostname of the database to connect to",
-			},
-			cli.StringFlag{
-				Name:  "port",
-				Value: "5432",
-				Usage: "port of the database to connect to",
-			},
-			cli.StringFlag{
-				Name:  "user",
-				Value: "",
-				Usage: "username to connect with",
-			},
-			cli.StringFlag{
-				Name:  "password",
-				Value: "",
-				Usage: "password to connect with",
-			},
-			cli.StringFlag{
-				Name:  "database",
-				Value: "postgres",
-				Usage: "database to connect with",
-			},
-			cli.StringFlag{
-				Name:  "schema",
-				Value: "public",
-				Usage: "schema to query against",
-			},
-		},
-	}}
-
-	err := app.Run(os.Args)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err.Error())
-		os.Exit(1)
-	}
+func init() {
+	flag.Parse()
 }
 
-func run_server(ctx *cli.Context) error {
+func main() {
+	router := mux.NewRouter()
+	router.StrictSlash(true)
+
+	api := router.PathPrefix("/api").Subrouter()
+	api.HandleFunc("/", available_tables)
+	http.Handle("/", router)
+
+	fmt.Printf("%v %v %v %v %v %v\n", *host, *port, *username, *password, *database, *schema)
+
+	fmt.Println("Server started on port 8080")
+	fmt.Fprintf(os.Stderr, "%v", http.ListenAndServe(":8080", nil))
+}
+
+func available_tables(w http.ResponseWriter, r *http.Request) {
 	database := postgres_db{
-		Host:     ctx.String("host"),
-		Port:     ctx.String("port"),
-		Username: ctx.String("user"),
-		Password: ctx.String("password"),
-		Database: ctx.String("database"),
-		Schema:   ctx.String("schema"),
+		Host:     *host,
+		Port:     *port,
+		Username: *username,
+		Password: *password,
+		Database: *database,
+		Schema:   *schema,
 	}
 	results, err := describe_tables(database)
 	fmt.Printf("%v\n", results)
-	return err
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, "%v", results)
+	}
 }
