@@ -27,8 +27,6 @@ func main() {
 	api.HandleFunc("/", available_tables)
 	http.Handle("/", router)
 
-	fmt.Printf("%v %v %v %v %v %v\n", *host, *port, *username, *password, *database, *schema)
-
 	fmt.Println("Server started on port 8080")
 	fmt.Fprintf(os.Stderr, "%v", http.ListenAndServe(":8080", nil))
 }
@@ -43,7 +41,6 @@ func available_tables(w http.ResponseWriter, r *http.Request) {
 		Schema:   *schema,
 	}
 	results, err := describe_tables(database)
-	fmt.Printf("%v\n", results)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
